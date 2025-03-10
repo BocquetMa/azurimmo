@@ -3,6 +3,7 @@ package bts.sio.azurimmo2.views
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +12,7 @@ import bts.sio.azurimmo.views.batiment.BatimentList
 import bts.sio.azurimmo.views.contrat.ContratList
 import bts.sio.azurimmo.views.locataire.LocataireList
 import bts.sio.azurimmo.views.paiement.PaiementList
+import bts.sio.azurimmo.viewsmodel.batiment.BatimentViewModel
 
 @Composable
 fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -20,7 +22,8 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
         modifier = modifier
     ) {
         composable("batiments_list") {
-            BatimentList()
+            val viewModel: BatimentViewModel = viewModel()
+            BatimentList(viewModel = viewModel)
         }
         composable("appartements_list") {
             AppartementList()
