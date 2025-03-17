@@ -6,7 +6,7 @@ data class Contrat(
     val id: Int,
     val locataire: Locataire,
     val appartement: Appartement,
-    val dateDebut: Double,
-    val dateFin: LocalDate,
+    val dateDebut: String,
+    val dateFin: String,
     val montantLoyer: Double
 )
