@@ -11,9 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import bts.sio.azurimmo2.model.Locataire
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun LocataireCard(locataire: Locataire) {
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val dateNaissanceFormatted = locataire.dateNaissance.format(formatter)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -24,8 +28,7 @@ fun LocataireCard(locataire: Locataire) {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(text = "${locataire.prenom} ${locataire.nom}", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Date de naissance: ${locataire.dateNaissance}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Nombre de contrats: ${locataire.contrats.size}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Date de naissance: $dateNaissanceFormatted", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
