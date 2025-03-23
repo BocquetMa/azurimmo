@@ -61,4 +61,23 @@ class ContratViewModel : ViewModel() {
             }
         }
     }
+
+    fun addContrat(contrat: Contrat, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            try {
+                val response = RetrofitInstance.api.addContrat(contrat)
+                _contrats.value = _contrats.value + response
+                onSuccess()
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Impossible d'ajouter le contrat"}"
+                onError(_errorMessage.value!!)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
 }

@@ -22,22 +22,29 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
         modifier = modifier
     ) {
         composable("batiments_list") {
-            val viewModel: BatimentViewModel = viewModel()
-            BatimentList(viewModel = viewModel)
+            // Passe le navController à BatimentList
+            BatimentList(navController = navController)
         }
+
+        composable("appartements_list?batimentId={batimentId}") { backStackEntry ->
+            val batimentId = backStackEntry.arguments?.getString("batimentId")?.toIntOrNull()
+            AppartementList(batimentId = batimentId)  // Passe le batimentId récupéré ou null
+        }
+
         composable("appartements_list") {
-            AppartementList()
+            AppartementList(batimentId = null)  // Lorsque aucun batimentId n'est fourni
         }
+
         composable("contrats_list") {
             ContratList()
         }
+
         composable("locataires_list") {
             LocataireList()
         }
+
         composable("paiements_list") {
             PaiementList()
         }
     }
 }
-
-
