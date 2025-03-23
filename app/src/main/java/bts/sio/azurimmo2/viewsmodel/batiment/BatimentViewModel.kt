@@ -9,12 +9,9 @@ import bts.sio.azurimmo2.api.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Response
 
-// ViewModel pour gérer les données des bâtiments
 class BatimentViewModel : ViewModel() {
 
-    // Liste mutable des bâtiments
     private val _batiments = MutableStateFlow<List<Batiment>>(emptyList())
     val batiments: StateFlow<List<Batiment>> = _batiments
 
@@ -27,6 +24,26 @@ class BatimentViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    init {
+        getBatiments()
+    }
+
+    fun getBatiments() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            try {
+                val response = RetrofitInstance.api.getBatiments()
+                _batiments.value = response
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Une erreur s'est produite"}"
+            } finally {
+                _isLoading.value = false
+                println("Chargement terminé")
+            }
+        }
+    }
 
     fun getBatiment(batimentId: Int) {
         viewModelScope.launch {
@@ -34,16 +51,32 @@ class BatimentViewModel : ViewModel() {
             _errorMessage.value = null
 
             try {
-                val batiment = RetrofitInstance.api.getBatiment(batimentId) // Retourne un seul Batiment
-                _batiment.value = batiment
-
+                val response = RetrofitInstance.api.getBatiment(batimentId)
+                _batiment.value = response.body()
             } catch (e: Exception) {
                 _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Une erreur s'est produite"}"
             } finally {
                 _isLoading.value = false
-                println("Chargement du bâtiment terminé")
+                println("Chargement du batiment terminé")
             }
         }
     }
 
+    fun addBatiment(batiment: Batiment) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = RetrofitInstance.api.addBatiment(batiment)
+                if (response.isSuccessful) {
+                    getBatiments()
+                } else {
+                    _errorMessage.value = "Erreur lors de l'ajout du bâtiment : ${response.message()}"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur : ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }

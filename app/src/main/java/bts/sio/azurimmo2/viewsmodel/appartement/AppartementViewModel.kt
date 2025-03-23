@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AppartementViewModel: ViewModel() {
+class AppartementViewModel : ViewModel() {
 
-    private val _appartements= MutableStateFlow<List<Appartement>>(emptyList())
+    private val _appartements = MutableStateFlow<List<Appartement>>(emptyList())
     val appartements: StateFlow<List<Appartement>> = _appartements
 
     private val _isLoading = MutableStateFlow(false)
@@ -19,10 +19,6 @@ class AppartementViewModel: ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    init {
-        getAppartements()
-    }
-
     fun getAppartements() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -30,13 +26,11 @@ class AppartementViewModel: ViewModel() {
 
             try {
                 val response = RetrofitInstance.api.getAppartements()
-                println("appts dans AVWM" + response)
                 _appartements.value = response
             } catch (e: Exception) {
                 _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Une erreur s'est produite"}"
             } finally {
                 _isLoading.value = false
-                println("Chargement des appartements terminé")
             }
         }
     }
@@ -44,7 +38,7 @@ class AppartementViewModel: ViewModel() {
     fun getAppartementsByBatiment(batimentId: Int) {
         viewModelScope.launch {
             _isLoading.value = true
-            _errorMessage.value = null  // Réinitialise l'erreur avant l'appel
+            _errorMessage.value = null
             try {
                 val response = RetrofitInstance.api.getAppartementsByBatimentId(batimentId)
                 _appartements.value = response
@@ -53,7 +47,29 @@ class AppartementViewModel: ViewModel() {
                 _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Une erreur s'est produite"}"
             } finally {
                 _isLoading.value = false
-                println("Chargement des appartements du batiment selectionné terminé" + batimentId )
+                println("Chargement des appartements du batiment sélectionné terminé: " + batimentId)
+            }
+        }
+    }
+
+    fun addAppartement(appartement: Appartement) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = RetrofitInstance.api.addAppartement(appartement)
+                if (response.isSuccessful) {
+                    if (appartement.batiment != null && appartement.batiment.id > 0) {
+                        getAppartementsByBatiment(appartement.batiment.id.toInt())
+                    } else {
+                        getAppartements()
+                    }
+                } else {
+                    _errorMessage.value = "Erreur lors de l'ajout de l'appartement : ${response.message()}"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur : ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
     }

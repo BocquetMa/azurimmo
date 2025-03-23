@@ -20,8 +20,7 @@ fun BatimentCard(batiment: Batiment, navController: NavController) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {navController.navigate("appartements_list?batimentId=${batiment.id}")},
-
+            .clickable { navController.navigate("appartements_list?batimentId=${batiment.id}") },
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Column(

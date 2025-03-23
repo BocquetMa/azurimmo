@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,27 +18,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import bts.sio.azurimmo.viewsmodel.appartement.AppartementViewModel
 import bts.sio.azurimmo.viewsmodel.batiment.BatimentViewModel
 
 @Composable
 fun AppartementList(
-    batimentId: Int? = null,  // batimentId devient optionnel
+    batimentId: Int? = null,
     appartementViewModel: AppartementViewModel = viewModel(),
-    batimentViewModel: BatimentViewModel = viewModel()
+    batimentViewModel: BatimentViewModel = viewModel(),
+    navController: NavController
 ) {
     val appartements by appartementViewModel.appartements.collectAsState()
     val isLoading by appartementViewModel.isLoading.collectAsState()
     val errorMessage by appartementViewModel.errorMessage.collectAsState()
     val batiment by batimentViewModel.batiment.collectAsState()
 
-    // récup des données à afficher
     LaunchedEffect(batimentId) {
         if (batimentId == null) {
-            appartementViewModel.getAppartements()  // Charge tous les appartements
+            appartementViewModel.getAppartements()
         } else {
             appartementViewModel.getAppartementsByBatiment(batimentId)
-            batimentViewModel.getBatiment(batimentId) // Charge par bâtiment
+            batimentViewModel.getBatiment(batimentId)
         }
     }
 
@@ -60,8 +61,7 @@ fun AppartementList(
             }
             else -> {
                 LazyColumn {
-                    // BLOC D'INFOS SUR LE BATIMENT SI SELECTIONNE AVANT
-                    batiment?.let {
+                    if (batiment != null) {
                         item {
                             Column(
                                 modifier = Modifier
@@ -77,22 +77,40 @@ fun AppartementList(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Adresse : ${it.adresse ?: "Non défini"}",
+                                    text = "Adresse : ${batiment?.adresse ?: "Non défini"}",
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Ville : ${it.ville ?: "Non défini"}",
+                                    text = "Ville : ${batiment?.ville ?: "Non défini"}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
+
+                        item {
+                            Button(
+                                onClick = {
+                                    navController.navigate("add_appartement/${batiment?.id}")
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = "Ajouter")
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Ajouter un appartement")
+                                }
+                            }
+                        }
                     }
 
-                    // S'il y a des appartements
                     if (appartements.isNotEmpty()) {
-                        // Titre Liste des appartements
                         item {
                             Text(
                                 text = "Liste des appartements",
@@ -106,12 +124,10 @@ fun AppartementList(
                             )
                         }
 
-                        // Liste des appartements
                         items(appartements) { appartement ->
                             AppartementCard(appartement = appartement)
                         }
                     } else {
-                        // Il n'y a pas d'appartement pour ce bâtiment
                         item {
                             Text(
                                 text = "Pas d'appartement pour ce bâtiment",
