@@ -19,11 +19,7 @@ class AppartementViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    init {
-        getAppartements()
-    }
-
-    private fun getAppartements() {
+    fun getAppartements() {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
@@ -33,6 +29,45 @@ class AppartementViewModel : ViewModel() {
                 _appartements.value = response
             } catch (e: Exception) {
                 _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Une erreur s'est produite"}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun getAppartementsByBatiment(batimentId: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            try {
+                val response = RetrofitInstance.api.getAppartementsByBatimentId(batimentId)
+                _appartements.value = response
+
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur : ${e.localizedMessage ?: "Une erreur s'est produite"}"
+            } finally {
+                _isLoading.value = false
+                println("Chargement des appartements du batiment sélectionné terminé: " + batimentId)
+            }
+        }
+    }
+
+    fun addAppartement(appartement: Appartement) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = RetrofitInstance.api.addAppartement(appartement)
+                if (response.isSuccessful) {
+                    if (appartement.batiment != null && appartement.batiment.id > 0) {
+                        getAppartementsByBatiment(appartement.batiment.id.toInt())
+                    } else {
+                        getAppartements()
+                    }
+                } else {
+                    _errorMessage.value = "Erreur lors de l'ajout de l'appartement : ${response.message()}"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur : ${e.message}"
             } finally {
                 _isLoading.value = false
             }

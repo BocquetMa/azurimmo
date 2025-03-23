@@ -61,4 +61,5 @@ class ContratViewModel : ViewModel() {
             }
         }
     }
+
 }
